@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MarsCode</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        ol {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .game-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        input {
+            width: 200px;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Number Guess Game</h1>
+    <p>猜1-100数字，你有10次机会，直到你猜对为止</p>
+
+    <div class="game-head">
+        <input type="number" required id="guessInput" min="1" max="100" placeholder="你猜猜">
+        <button onclick="submitGuess()" class="submitGuess">Submit Guess</button>
+        <button onclick="newGame()" id="newGameBtn" class="hidden">New Game</button>
+    </div>
+    <div class="game-panel">
+        <p>Guess History:</p>
+        <ol class="history"></ol>
+        <p class="result"></p>
+        <!-- <p class="hint"></p> -->
+        <!-- <p class="times"></p> -->
+    </div>
+
+
+    <script>
+        // 定义变量
+        let guesses = [];
+        let times = 0;
+        let random;
+
+        //DOM
+        const history = document.querySelector('.history');
+        const newGameBtn = document.getElementById('newGameBtn');
+        const submitGuessBtn = document.querySelector('.submitGuess');
+        const result = document.querySelector('.result');
+        const guessInput = document.getElementById('guessInput');
+
+        // 生成一个1-100之间的随机数
+        const randomNumber = () => {
+            random = Math.floor(Math.random() * 100) + 1;
+        }
+        randomNumber();
+
+
+        function submitGuess() {
+            const guess = parseInt(guessInput.value);
+            // 检查是否有效
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                result.textContent = '请输入1-100之间的数字';
+                clearInput();
+                return;
+            }
+            // 检查是否已经猜过
+            if (guesses.includes(guess)) {
+                result.textContent = '你已经猜过这个数字了';
+                clearInput();
+                return;
+            }
+            //判断
+            if (guess === random) {
+                win();
+            } else if (guess > random) {
+                big();
+            } else if (times >= 9) {
+                lose();
+            } else {
+                small();
+            }
+
+            //判断
+            // (isNaN(guess) || guess < 1 || guess > 100)
+            //     ? (result.textContent = '请输入1-100之间的数字', clearInput())
+            //     : guesses.includes(guess)
+            //         ? (result.textContent = '你已经猜过这个数字了', clearInput())
+            //         : guess === random
+            //             ? win()
+            //             : guess > random
+            //                 ? big()
+            //                 : times >= 9
+            //                     ? lose()
+            //                     : small();
+
+            // 检查是否有效
+            if (!isNaN(guess) && guess >= 1 && guess <= 100 && times < 10 && !guesses.includes(guess) && guess !==
+                random) {
+                times++;
+                guesses.push(guess);
+                // 显示历史猜测
+                const li = document.createElement('li');
+                li.textContent = guess;
+                history.appendChild(li);
+                // history.textContent = guesses.join(', ');
+                guessInput.placeholder = `剩余次数: ${10 - times}`;
+                clearInput();
+            }
+        }
+        //重新输入
+        function clearInput() {
+            guessInput.value = '';
+            guessInput.focus();
+        }
+
+        // const clearInput = () => {
+        //     guessInput.value = '';
+        //     guessInput.focus();
+        // };
+
+        function win() {
+            result.textContent = '恭喜你，猜对了！';
+            newGameBtn.classList.remove('hidden');
+            submitGuessBtn.classList.add('hidden');
+            guessInput.disabled = true; // 禁用输入框
+        }
+
+        function big() {
+            result.textContent = '你猜的数字太大了';
+        }
+
+        function small() {
+            result.textContent = '你猜的数字太小了';
+        }
+
+        function lose() {
+            result.textContent = '很遗憾，你10次都没有猜对。正确答案是' + random;
+            newGameBtn.classList.remove('hidden');
+            submitGuessBtn.classList.add('hidden');
+            // document.querySelector('.submitGuess').classList.add('hidden');
+            guessInput.disabled = true; // 禁用输入框
+        }
+
+        function newGame() {
+            // 重置游戏
+            guesses = [];
+            times = 0;
+            result.textContent = '';
+            history.textContent = '';
+            guessInput.value = '';
+            guessInput.placeholder = '你猜猜';
+            // 隐藏新游戏按钮
+            newGameBtn.classList.add('hidden');
+            // 显示提交按钮
+            submitGuessBtn.classList.remove('hidden');
+            // 重新启用输入框
+            guessInput.disabled = false;
+            guessInput.focus();
+            // 生成新的随机数
+            randomNumber();
+        }
+
+        // 监听回车键
+        guessInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                submitGuess();
+            }
+        });
+    </script>
+</body>
+
+</html>
