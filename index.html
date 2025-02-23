@@ -2,167 +2,200 @@
 <html>
 
 <head>
-    <title>Number Guess Game</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" type="text/css" href="style.css">
+      <title>Number Guess Game</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width">
+      <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
-    <h1>Number Guess Game</h1>
-    <p>猜1-100数字，你有10次机会，直到你猜对为止</p>
+      <h1>Number Guess Game</h1>
+      <p>猜1-100数字，直到你猜对为止</p>
+      <button onclick="startBtn()" id="startBtn">Start</button>
 
-    <div class="game-head">
-        <input type="number" required id="guessInput" min="1" max="100" placeholder="你猜猜">
-        <button onclick="submitGuess()" class="submitGuess">Submit Guess</button>
-        <button onclick="newGame()" id="newGameBtn" class="hidden">New Game</button>
-        <!-- <p class="timer"></p> -->
-    </div>
-    <div class="game-panel">
-        <p>Guess History:</p>
-        <ol class="history"></ol>
-        <p class="result"></p>
-        <!-- <p class="hint"></p> -->
-    </div>
+      <div class="game-container hidden">
+            <div class="game-head">
+                  <p class="timer"></p>
+                  <input type="number" required id="guessInput" min="1" max="100" placeholder="你猜猜">
+                  <button onclick="submitGuess()" class="submitGuess">Submit</button>
+                  <button onclick="newGame()" id="newGameBtn" class="hidden">New Game</button>
+            </div>
+            <div class="game-panel">
+                  <p class="hint hidden">Guess History:</p>
+                  <ol class="history"></ol>
+                  <p class="result"></p>
+                  <!-- <p class="hint"></p> -->
+            </div>
+      </div>
 
+      <script>
+            // 定义变量
+            let guesses = [];
+            let times = 0;
+            let random;
+            let timer = 30;
+            let intervalId;
 
-    <script>
-        // 定义变量
-        let guesses = [];
-        let times = 0;
-        let random;
+            //DOM
+            const history = document.querySelector('.history');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const submitGuessBtn = document.querySelector('.submitGuess');
+            const result = document.querySelector('.result');
+            const guessInput = document.getElementById('guessInput');
+            const timeKeeper = document.querySelector('.timer');
 
-        //DOM
-        const history = document.querySelector('.history');
-        const newGameBtn = document.getElementById('newGameBtn');
-        const submitGuessBtn = document.querySelector('.submitGuess');
-        const result = document.querySelector('.result');
-        const guessInput = document.getElementById('guessInput');
-        // const timerElement = document.querySelector('.timer');
-
-
-        // 计时器
-        // let timerInterval;
-
-        // 生成一个1-100之间的随机数
-        const randomNumber = () => {
-            random = Math.floor(Math.random() * 100) + 1;
-        }
-        randomNumber();
-
-
-        function submitGuess() {
-            const guess = parseInt(guessInput.value);
-            // 检查是否有效
-            if (isNaN(guess) || guess < 1 || guess > 100) {
-                result.textContent = '请输入1-100之间的数字';
-                clearInput();
-                return;
-            }
-            // 检查是否已经猜过
-            if (guesses.includes(guess)) {
-                result.textContent = '你已经猜过这个数字了';
-                clearInput();
-                return;
-            }
-            //判断
-            if (guess === random) {
-                win();
-            } else if (guess > random) {
-                big();
-            } else if (times >= 9) {
-                lose();
-            } else {
-                small();
+            // 开始游戏
+            const startBtn = () => {
+                  //隐藏开始按钮
+                  document.querySelector('.game-container').classList.remove('hidden');
+                  document.getElementById('startBtn').classList.add('hidden');
+                  guessInput.focus();
+                  //开始计时
+                  countDown();
+                  intervalId = setInterval(countDown, 1000);
             }
 
-            //判断
-            // (isNaN(guess) || guess < 1 || guess > 100)
-            //     ? (result.textContent = '请输入1-100之间的数字', clearInput())
-            //     : guesses.includes(guess)
-            //         ? (result.textContent = '你已经猜过这个数字了', clearInput())
-            //         : guess === random
-            //             ? win()
-            //             : guess > random
-            //                 ? big()
-            //                 : times >= 9
-            //                     ? lose()
-            //                     : small();
-
-            // 检查是否有效
-            if (!isNaN(guess) && guess >= 1 && guess <= 100 && times < 10 && !guesses.includes(guess) && guess !==
-                random) {
-                times++;
-                guesses.push(guess);
-                // 显示历史猜测
-                const li = document.createElement('li');
-                li.textContent = guess;
-                history.appendChild(li);
-                // history.textContent = guesses.join(', ');
-                guessInput.placeholder = `剩余次数: ${10 - times}`;
-                clearInput();
+            //计时
+            const countDown = () => {
+                  timer--;
+                  timeKeeper.textContent = `倒计时: ${timer}`;
+                  if (timer === 0) {
+                        lose();
+                  }
             }
-        }
-        //重新输入
-        function clearInput() {
-            guessInput.value = '';
-            guessInput.focus();
-        }
 
-        // const clearInput = () => {
-        //     guessInput.value = '';
-        //     guessInput.focus();
-        // };
-
-        function win() {
-            result.textContent = '恭喜你，猜对了！';
-            newGameBtn.classList.remove('hidden');
-            submitGuessBtn.classList.add('hidden');
-            guessInput.disabled = true; // 禁用输入框
-        }
-
-        function big() {
-            result.textContent = '你猜的数字太大了';
-        }
-
-        function small() {
-            result.textContent = '你猜的数字太小了';
-        }
-
-        function lose() {
-            result.textContent = '很遗憾，你10次都没有猜对。正确答案是' + random;
-            newGameBtn.classList.remove('hidden');
-            submitGuessBtn.classList.add('hidden');
-            // document.querySelector('.submitGuess').classList.add('hidden');
-            guessInput.disabled = true; // 禁用输入框
-        }
-
-        function newGame() {
-            // 重置游戏
-            guesses = [];
-            times = 0;
-            result.textContent = '';
-            history.textContent = '';
-            guessInput.value = '';
-            guessInput.placeholder = '你猜猜';
-            // 隐藏新游戏按钮
-            newGameBtn.classList.add('hidden');
-            // 显示提交按钮
-            submitGuessBtn.classList.remove('hidden');
-            // 重新启用输入框
-            guessInput.disabled = false;
-            guessInput.focus();
-            // 生成新的随机数
+            // 生成一个1-100之间的随机数
+            const randomNumber = () => {
+                  random = Math.floor(Math.random() * 100) + 1;
+            }
             randomNumber();
-        }
 
-        // 监听回车键
-        guessInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                submitGuess();
+
+            function submitGuess() {
+                  const guess = parseInt(guessInput.value);
+                  // 检查是否有效
+                  if (isNaN(guess) || guess < 1 || guess > 100) {
+                        result.textContent = '请输入1-100之间的数字';
+                        clearInput();
+                        return;
+                  }
+                  // 检查是否已经猜过
+                  if (guesses.includes(guess)) {
+                        result.textContent = '你已经猜过这个数字了';
+                        clearInput();
+                        return;
+                  }
+                  //判断
+                  if (guess === random) {
+                        win();
+                  } else if (guess > random) {
+                        big();
+                  } else if (times >= 9) {
+                        lose();
+                  } else {
+                        small();
+                  }
+
+                  //判断
+                  // (isNaN(guess) || guess < 1 || guess > 100)
+                  //     ? (result.textContent = '请输入1-100之间的数字', clearInput())
+                  //     : guesses.includes(guess)
+                  //         ? (result.textContent = '你已经猜过这个数字了', clearInput())
+                  //         : guess === random
+                  //             ? win()
+                  //             : guess > random
+                  //                 ? big()
+                  //                 : times >= 9
+                  //                     ? lose()
+                  //                     : small();
+
+                  // 检查是否有效
+                  if (!isNaN(guess) && guess >= 1 && guess <= 100 && times < 10 && !guesses.includes(guess) && guess !==
+                        random) {
+                        times++;
+                        guesses.push(guess);
+                        // 显示历史猜测
+                        document.querySelector('.hint').classList.remove('hidden');
+                        const li = document.createElement('li');
+                        li.textContent = guess;
+                        history.appendChild(li);
+                        // history.textContent = guesses.join(', ');
+                        guessInput.placeholder = `剩 ${10 - times} 次`;
+                        clearInput();
+                  }
             }
-        });
-    </script>
+            //重新输入
+            function clearInput() {
+                  guessInput.value = '';
+                  guessInput.focus();
+            }
+
+            // const clearInput = () => {
+            //     guessInput.value = '';
+            //     guessInput.focus();
+            // };
+
+            function win() {
+                  result.textContent = `恭喜你，猜对了！用时${30 - timer}秒`;
+                  newGameBtn.classList.remove('hidden');
+                  submitGuessBtn.classList.add('hidden');
+                  guessInput.disabled = true; // 禁用输入框
+                  //停止倒计时
+                  clearInterval(intervalId);
+            }
+
+            function big() {
+                  result.textContent = '你猜的数字太大了';
+            }
+
+            function small() {
+                  result.textContent = '你猜的数字太小了';
+            }
+
+            function lose() {
+                  if (guesses.length === 10) {
+                        result.textContent = '很遗憾，你10次都没有猜对长度。正确答案是' + random;
+                  } else {
+                        result.textContent = '时间到了，你没有猜对。正确答案是' + random;
+                  }
+                  newGameBtn.classList.remove('hidden');
+                  submitGuessBtn.classList.add('hidden');
+                  // document.querySelector('.submitGuess').classList.add('hidden');
+                  guessInput.disabled = true; // 禁用输入框
+                  //停止倒计时
+                  clearInterval(intervalId);
+            }
+
+            function newGame() {
+                  // 重置游戏
+                  guesses = [];
+                  times = 0;
+                  result.textContent = '';
+                  history.textContent = '';
+                  guessInput.value = '';
+                  guessInput.placeholder = '你猜猜';
+                  // 隐藏新游戏按钮
+                  newGameBtn.classList.add('hidden');
+                  // 显示提交按钮
+                  submitGuessBtn.classList.remove('hidden');
+                  // 重新启用输入框
+                  guessInput.disabled = false;
+                  guessInput.focus();
+                  // 生成新的随机数
+                  randomNumber();
+                  // 重新开始计时
+                  timer = 30;
+                  countDown();
+                  intervalId = setInterval(countDown, 1000);
+            }
+
+            // 监听回车键
+            guessInput.addEventListener('keydown', (event) => {
+                  if (event.key === 'Enter') {
+                        submitGuess();
+                  }
+            });
+      </script>
 </body>
 
 </html>
